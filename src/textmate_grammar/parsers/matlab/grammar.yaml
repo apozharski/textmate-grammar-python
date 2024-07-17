@@ -18,7 +18,7 @@ repository:
     beginCaptures:
       '1':
         name: punctuation.definition.function.anonymous.matlab
-    end: (?=;|(?<!(?:\.{3}.*))\n|%)
+    end: (?=;|,|(?<!(?:\.{3}.*))\n|%)
     name: meta.function.anonymous.matlab
     patterns:
     - begin: \G(\()
@@ -40,7 +40,7 @@ repository:
       beginCaptures:
         '1':
           name: punctuation.section.group.begin.matlab
-      end: (\))?[^\S\n]*(?=;|(?<!(?:\.{3}.*))\n|%)
+      end: (\))?[^\S\n]*(?=;|,|(?<!(?:\.{3}.*))\n|%)
       endCaptures:
         '1':
           name: punctuation.section.group.end.matlab
@@ -62,7 +62,7 @@ repository:
       name: meta.for.matlab
       patterns:
       - begin: \G(?!$)
-        end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+        end: (?<!\.{3}.*)(?:(?=([,;])(?![^(]*\)))|$)
         name: meta.for.declaration.matlab
         patterns:
         - include: $self
@@ -81,27 +81,31 @@ repository:
       name: meta.if.matlab
       patterns:
       - begin: \G(?!$)
-        end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+        end: (?<!\.{3}.*)(?:(?=[,;](?![^(]*\)))|$)
         name: meta.if.declaration.matlab
         patterns:
         - include: $self
-      - captures:
+      - begin: \s*(?<=^|[\s,;])(elseif)\b
+        beginCaptures:
           '1':
             name: keyword.control.elseif.matlab
-        match: (?:\s*)(?<=^|[\s,;])(elseif)\b
+        end: \s*(?<=^|[\s,;])(?=elseif|else|end)\b
         name: meta.elseif.matlab
         patterns:
         - begin: \G(?!$)
-          end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+          end: (?<!\.{3}.*)(?:(?=([,;])(?![^(]*\)))|$)
           name: meta.elseif.declaration.matlab
           patterns:
           - include: $self
-      - captures:
+        - include: $self
+      - begin: \s*(?<=^|[\s,;])(else)\b
+        beginCaptures:
           '1':
             name: keyword.control.else.matlab
-        end: ^
-        match: (?:\s*)(?<=^|[\s,;])(else)\b
+        end: \s*(?<=^|[\s,;])(?=end)\b
         name: meta.else.matlab
+        patterns:
+        - include: $self
       - include: $self
     - begin: \s*(?<=^|[\s,;])(parfor)\b
       beginCaptures:
@@ -114,7 +118,7 @@ repository:
       name: meta.for.parallel.matlab
       patterns:
       - begin: \G(?!$)
-        end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+        end: (?<!\.{3}.*)(?:(?=([,;])(?![^(]*\)))|$)
         name: meta.for.parallel.declaration.matlab
         patterns:
         - include: $self
@@ -130,42 +134,50 @@ repository:
       name: meta.repeat.parallel.matlab
       patterns:
       - begin: \G(?!$)
-        end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+        end: (?<!\.{3}.*)(?:(?=([,;])(?![^(]*\)))|$)
         name: meta.repeat.parallel.declaration.matlab
         patterns:
         - include: $self
       - include: $self
-    - begin: \s*(?<=^|[\s,;])(switch)\s+([a-zA-Z0-9][a-zA-Z0-9_]*)
+    - begin: \s*(?<=^|[\s,;])(switch)\b
       beginCaptures:
         '1':
           name: keyword.control.switch.matlab
-        '2':
-          name: variable.other.constant.matlab
       end: \s*(?<=^|[\s,;])(end)\b
       endCaptures:
         '1':
           name: keyword.control.end.switch.matlab
+        '2':
+          patterns:
+          - include: $self
       name: meta.switch.matlab
       patterns:
-      - captures:
-          '2':
+      - begin: \G(?!$)
+        end: (?<!\.{3}.*)(?:(?=[,;](?![^(]*\)))|$)
+        name: meta.switch.declaration.matlab
+        patterns:
+        - include: $self
+      - begin: \s*(?<=^|[\s,;])(case)\b
+        beginCaptures:
+          '1':
             name: keyword.control.switch.case.matlab
-          '3':
-            begin: \G(?!$)
-            end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
-            name: meta.case.declaration.matlab
-            patterns:
-            - include: $self
-        match: (\s*)(?<=^|[\s,;])(case)\b(.*?)(?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
+        end: \s*(?<=^|[\s,;])(?=case|otherwise|end)\b
         name: meta.case.matlab
-      - captures:
-          '2':
+        patterns:
+        - begin: \G(?!$)
+          end: (?<!\.{3}.*)(?:(?=([,;])(?![^(]*\)))|$)
+          name: meta.case.declaration.matlab
+          patterns:
+          - include: $self
+        - include: $self
+      - begin: \s*(?<=^|[\s,;])(otherwise)\b
+        beginCaptures:
+          '1':
             name: keyword.control.switch.otherwise.matlab
-          '3':
-            patterns:
-            - include: $self
-        match: (\s*)(?<=^|[\s,;])(otherwise)\b
+        end: \s*(?<=^|[\s,;])(?=end)\b
         name: meta.otherwise.matlab
+        patterns:
+        - include: $self
       - include: $self
     - begin: \s*(?<=^|[\s,;])(try)\b
       beginCaptures:
@@ -195,12 +207,11 @@ repository:
           name: keyword.control.end.while.matlab
       name: meta.while.matlab
       patterns:
-      - begin: \G
-        end: (?<!\.{3})(?:(?=([,;])(?![^(]*\)))|$)
-        endCaptures:
-          '1':
-            include: $self
+      - begin: \G(?!$)
+        end: (?<!\.{3}.*)(?:(?=[,;](?![^(]*\)))|$)
         name: meta.while.declaration.matlab
+        patterns:
+        - include: $self
       - include: $self
   braced_validator_list:
     begin: \s*({)\s*
@@ -215,6 +226,9 @@ repository:
       '0':
         name: punctuation.section.block.end.matlab
     patterns:
+    - include: '#function_call'
+    - match: ','
+      name: punctuation.separator.parameter.comma.matlab
     - include: '#braced_validator_list'
     - include: '#validator_strings'
     - include: '#line_continuation'
@@ -646,7 +660,7 @@ repository:
         - match: \*
           name: variable.language.wildcard.matlab
     comment: Import statement
-    match: \b(import)\b[^\S\n]+([a-zA-Z0-9.\*]*)[^\S\n]*(?=;|%|$)
+    match: '[^\S\r\n]*\b(import)\b[^\S\n]+([a-zA-Z0-9.\*]*)[^\S\n]*(?=;|%|$)'
     name: meta.import.matlab
   indexing_by_expression:
     begin: ([a-zA-Z][a-zA-Z0-9_]*)\s*(\.)(\()
